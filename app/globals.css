@@ -278,3 +278,283 @@ body {
   }
 }
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+body {
+  background-color: black;
+  color: white;
+}
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 262.1 83.3% 57.8%;
+    --primary-foreground: 210 20% 98%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 262.1 83.3% 57.8%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 262.1 83.3% 57.8%;
+    --primary-foreground: 210 20% 98%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 262.1 83.3% 57.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Custom styles without any font-face declarations */
+
+.gradient-text {
+  background: linear-gradient(90deg, #ff56f6, #b936ee, #3a47d5, #0ba0e4);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  background-size: 300% 300%;
+  animation: gradient 8s ease infinite;
+}
+
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.floating {
+  animation: floating 3s ease-in-out infinite;
+}
+
+@keyframes floating {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.skill-card {
+  transition: all 0.3s ease;
+  transform-style: preserve-3d;
+  perspective: 1000px;
+}
+
+.skill-card:hover {
+  transform: translateY(-10px) rotateX(10deg) rotateY(10deg);
+  box-shadow: 0 20px 30px rgba(0, 0, 0, 0.2);
+}
+
+.timeline-item {
+  position: relative;
+}
+
+.timeline-item::before {
+  content: "";
+  position: absolute;
+  width: 2px;
+  background-color: hsl(var(--primary));
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  margin-left: -1px;
+}
+
+.timeline-content {
+  position: relative;
+  /* background-color: hsl(var(--card)); */
+  background-color: rgba(207, 0, 0, 0.1) ;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.timeline-content::after {
+  content: "";
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  right: -10px;
+  background-color: hsl(var(--primary));
+  border-radius: 50%;
+  top: 15px;
+}
+
+.timeline-item:nth-child(even) .timeline-content {
+  margin-left: auto;
+}
+
+.timeline-item:nth-child(even) .timeline-content::after {
+  left: -10px;
+  right: auto;
+}
+
+/* Typing animation */
+.typing-text {
+  border-right: 3px solid hsl(var(--primary));
+  white-space: nowrap;
+  overflow: hidden;
+  display: inline-block;
+  animation: typing 3.5s steps(40, end), blink-caret 0.75s step-end infinite;
+}
+
+@keyframes typing {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+@keyframes blink-caret {
+  from,
+  to {
+    border-color: transparent;
+  }
+  50% {
+    border-color: hsl(var(--primary));
+  }
+}
+
+/* Diagonal page transitions */
+.page-transition-enter {
+  transform: translateX(-100%) translateY(100%);
+  opacity: 0;
+}
+
+.page-transition-enter-active {
+  transform: translateX(0) translateY(0);
+  opacity: 1;
+  transition: all 0.5s ease-out;
+}
+
+.page-transition-exit {
+  transform: translateX(0) translateY(0);
+  opacity: 1;
+}
+
+.page-transition-exit-active {
+  transform: translateX(100%) translateY(-100%);
+  opacity: 0;
+  transition: all 0.5s ease-in;
+}
+
+/* 3D hover effect for navbar */
+.nav-3d-item {
+  transition: transform 0.3s ease;
+  transform-style: preserve-3d;
+}
+
+.nav-3d-item:hover {
+  transform: translateZ(20px);
+}
+
+.nav-3d-container {
+  perspective: 1000px;
+}
+
+/* Animated background for hobby cards */
+.animated-bg {
+  position: relative;
+  overflow: hidden;
+}
+
+.animated-bg::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    to bottom right,
+    rgba(185, 54, 238, 0.2),
+    rgba(11, 160, 228, 0.2),
+    rgba(185, 54, 238, 0.2)
+  );
+  transform-origin: center;
+  animation: rotate 10s linear infinite;
+  z-index: -1;
+  border-radius: inherit;
+}
+
+@keyframes rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Glowing border animation for profile photo */
+.glow-border {
+  background: conic-gradient(
+    from 0deg,
+    transparent 0%,
+    hsl(var(--primary)) 20%,
+    hsl(var(--primary)) 40%,
+    transparent 60%
+  );
+  filter: blur(8px);
+  opacity: 0.8;
+  animation: rotate-border 4s linear infinite;
+}
+
+@keyframes rotate-border {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}

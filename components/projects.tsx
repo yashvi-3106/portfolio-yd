@@ -91,6 +91,54 @@ const projects = [
     githubLink: "#",
     prLink: "#",
   },
+  {
+    id: 8,
+    title: "E-Commerce Platform",
+    description:
+      "A full-stack e-commerce platform with product management, cart functionality, and payment processing.",
+    image: "/placeholder.svg?height=600&width=800",
+    category: "Featured",
+    technologies: ["React", "Node.js", "MongoDB", "Stripe"],
+    demoLink: "#",
+    githubLink: "#",
+    prLink: "#",
+  },
+  {
+    id: 1,
+    title: "E-Commerce Platform",
+    description:
+      "A full-stack e-commerce platform with product management, cart functionality, and payment processing.",
+    image: "/placeholder.svg?height=600&width=800",
+    category: "Featured",
+    technologies: ["React", "Node.js", "MongoDB", "Stripe"],
+    demoLink: "#",
+    githubLink: "#",
+    prLink: "#",
+  },
+  {
+    id: 1,
+    title: "E-Commerce Platform",
+    description:
+      "A full-stack e-commerce platform with product management, cart functionality, and payment processing.",
+    image: "/placeholder.svg?height=600&width=800",
+    category: "Featured",
+    technologies: ["React", "Node.js", "MongoDB", "Stripe"],
+    demoLink: "#",
+    githubLink: "#",
+    prLink: "#",
+  },
+  {
+    id: 1,
+    title: "E-Commerce Platform",
+    description:
+      "A full-stack e-commerce platform with product management, cart functionality, and payment processing.",
+    image: "/placeholder.svg?height=600&width=800",
+    category: "Featured",
+    technologies: ["React", "Node.js", "MongoDB", "Stripe"],
+    demoLink: "#",
+    githubLink: "#",
+    prLink: "#",
+  },
 ]
 
 export default function Projects() {

@@ -2,41 +2,13 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Github, Linkedin, Mail, Send, Twitter } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
-import { Canvas } from "@react-three/fiber"
-import { Float, MeshDistortMaterial } from "@react-three/drei"
-
-function Background() {
-  return (
-    <>
-      {/* Replace Environment with simple lighting */}
-      <ambientLight intensity={0.8} />
-      <directionalLight position={[10, 10, 5]} intensity={1} />
-      <directionalLight position={[-10, -10, -5]} intensity={0.5} color="#b936ee" />
-      <hemisphereLight args={["#b936ee", "#0ba0e4", 0.5]} />
-
-      <Float speed={4} rotationIntensity={1} floatIntensity={2} position={[0, 0, -5]}>
-        <mesh>
-          <sphereGeometry args={[5, 64, 64]} />
-          <MeshDistortMaterial
-            color="#b936ee"
-            attach="material"
-            distort={0.5}
-            speed={2}
-            roughness={0}
-            metalness={0.8}
-          />
-        </mesh>
-      </Float>
-    </>
-  )
-}
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -46,9 +18,7 @@ export default function Contact() {
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { toast } = useToast()
-
-  // Check if we're in the browser
-  const isBrowser = typeof window !== "undefined"
+  const canvasRef = useRef<HTMLCanvasElement>(null)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -70,15 +40,186 @@ export default function Contact() {
     }, 1500)
   }
 
+  // Unique background for Contact section
+  useEffect(() => {
+    if (!canvasRef.current) return
+
+    const canvas = canvasRef.current
+    const ctx = canvas.getContext("2d")
+    if (!ctx) return
+
+    // Set canvas dimensions
+    const setCanvasDimensions = () => {
+      const dpr = window.devicePixelRatio || 1
+      canvas.width = window.innerWidth * dpr
+      canvas.height = window.innerHeight * dpr
+      canvas.style.width = `${window.innerWidth}px`
+      canvas.style.height = `${window.innerHeight}px`
+      ctx.scale(dpr, dpr)
+    }
+
+    setCanvasDimensions()
+    window.addEventListener("resize", setCanvasDimensions)
+
+    // Colors
+    const colors = [
+      { r: 185, g: 54, b: 238 }, // Purple (#b936ee)
+      { r: 11, g: 160, b: 228 }, // Blue (#0ba0e4)
+      { r: 255, g: 86, b: 246 }, // Pink (#ff56f6)
+      { r: 58, g: 71, b: 213 }, // Dark Blue (#3a47d5)
+    ]
+
+    // Create wave effect
+    class Wave {
+      amplitude: number
+      frequency: number
+      speed: number
+      phase: number
+      color: { r: number; g: number; b: number }
+      y: number
+      opacity: number
+      lineWidth: number
+
+      constructor(y: number) {
+        this.amplitude = Math.random() * 30 + 10
+        this.frequency = Math.random() * 0.01 + 0.005
+        this.speed = Math.random() * 0.05 + 0.02
+        this.phase = Math.random() * Math.PI * 2
+        this.color = colors[Math.floor(Math.random() * colors.length)]
+        this.y = y
+        this.opacity = Math.random() * 0.2 + 0.1
+        this.lineWidth = Math.random() * 3 + 1
+      }
+
+      draw(ctx: CanvasRenderingContext2D, time: number) {
+        ctx.beginPath()
+
+        for (let x = 0; x < window.innerWidth; x += 5) {
+          const y = Math.sin(x * this.frequency + time * this.speed + this.phase) * this.amplitude + this.y
+
+          if (x === 0) {
+            ctx.moveTo(x, y)
+          } else {
+            ctx.lineTo(x, y)
+          }
+        }
+
+        ctx.strokeStyle = `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, ${this.opacity})`
+        ctx.lineWidth = this.lineWidth
+        ctx.stroke()
+      }
+    }
+
+    // Create floating circles
+    class Circle {
+      x: number
+      y: number
+      radius: number
+      color: { r: number; g: number; b: number }
+      opacity: number
+      speed: number
+      direction: number
+      pulseSpeed: number
+      pulsePhase: number
+
+      constructor() {
+        this.x = Math.random() * window.innerWidth
+        this.y = Math.random() * window.innerHeight
+        this.radius = Math.random() * 20 + 5
+        this.color = colors[Math.floor(Math.random() * colors.length)]
+        this.opacity = Math.random() * 0.15 + 0.05
+        this.speed = Math.random() * 0.5 + 0.1
+        this.direction = Math.random() * Math.PI * 2
+        this.pulseSpeed = Math.random() * 0.02 + 0.01
+        this.pulsePhase = Math.random() * Math.PI * 2
+      }
+
+      update(time: number) {
+        // Move in a random direction
+        this.x += Math.cos(this.direction) * this.speed
+        this.y += Math.sin(this.direction) * this.speed
+
+        // Change direction slightly
+        this.direction += (Math.random() - 0.5) * 0.1
+
+        // Pulse size
+        const pulseFactor = Math.sin(time * this.pulseSpeed + this.pulsePhase) * 0.2 + 1
+
+        // Wrap around edges
+        if (this.x < -this.radius) this.x = window.innerWidth + this.radius
+        if (this.x > window.innerWidth + this.radius) this.x = -this.radius
+        if (this.y < -this.radius) this.y = window.innerHeight + this.radius
+        if (this.y > window.innerHeight + this.radius) this.y = -this.radius
+
+        return {
+          x: this.x,
+          y: this.y,
+          radius: this.radius * pulseFactor,
+          color: this.color,
+          opacity: this.opacity,
+        }
+      }
+
+      draw(ctx: CanvasRenderingContext2D, time: number) {
+        const { x, y, radius, color, opacity } = this.update(time)
+
+        ctx.beginPath()
+        ctx.arc(x, y, radius, 0, Math.PI * 2)
+        ctx.fillStyle = `rgba(${color.r}, ${color.g}, ${color.b}, ${opacity})`
+        ctx.fill()
+      }
+    }
+
+    // Create waves and circles
+    const waves = Array(10)
+      .fill(0)
+      .map((_, i) => new Wave(window.innerHeight * (i / 10)))
+
+    const circles = Array(20)
+      .fill(0)
+      .map(() => new Circle())
+
+    // Animation variables
+    let time = 0
+    let animationFrameId: number
+
+    // Animation loop
+    const animate = () => {
+      // Clear canvas with a dark background
+      ctx.fillStyle = "rgba(0, 0, 0, 0.2)"
+      ctx.fillRect(0, 0, window.innerWidth, window.innerHeight)
+
+      // Draw waves
+      waves.forEach((wave) => {
+        wave.draw(ctx, time)
+      })
+
+      // Draw circles
+      circles.forEach((circle) => {
+        circle.draw(ctx, time)
+      })
+
+      // Increment time
+      time += 0.01
+
+      // Request next frame
+      animationFrameId = requestAnimationFrame(animate)
+    }
+
+    // Start animation
+    animate()
+
+    // Cleanup
+    return () => {
+      window.removeEventListener("resize", setCanvasDimensions)
+      cancelAnimationFrame(animationFrameId)
+    }
+  }, [])
+
   return (
     <div className="relative w-full h-full min-h-screen">
-      <div className="absolute inset-0 -z-10">
-        {isBrowser && (
-          <Canvas>
-            <Background />
-          </Canvas>
-        )}
-      </div>
+      {/* Unique Background for Contact section */}
+      <canvas ref={canvasRef} className="absolute inset-0 -z-10" />
 
       <div className="container mx-auto px-4 py-16 relative z-10">
         <motion.div

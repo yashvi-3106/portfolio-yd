@@ -2,8 +2,7 @@
 
 import { motion } from "framer-motion"
 import { Card, CardContent } from "@/components/ui/card"
-import { Canvas } from "@react-three/fiber"
-import { Float, MeshDistortMaterial } from "@react-three/drei"
+import { useEffect, useRef } from "react"
 
 const skills = [
   {
@@ -80,31 +79,6 @@ const skills = [
   },
 ]
 
-function Background() {
-  return (
-    <>
-      <ambientLight intensity={0.8} />
-      <directionalLight position={[10, 10, 5]} intensity={1} />
-      <directionalLight position={[-10, -10, -5]} intensity={0.5} color="#b936ee" />
-      <hemisphereLight args={["#b936ee", "#0ba0e4", 0.5]} />
-
-      <Float speed={4} rotationIntensity={1} floatIntensity={2} position={[0, 0, -5]}>
-        <mesh>
-          <sphereGeometry args={[5, 64, 64]} />
-          <MeshDistortMaterial
-            color="#b936ee"
-            attach="material"
-            distort={0.5}
-            speed={2}
-            roughness={0}
-            metalness={0.8}
-          />
-        </mesh>
-      </Float>
-    </>
-  )
-}
-
 const container = {
   hidden: { opacity: 0 },
   show: {
@@ -121,18 +95,168 @@ const item = {
 }
 
 export default function Skills() {
-  // Check if we're in the browser
-  const isBrowser = typeof window !== "undefined"
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+
+  // Unique background for Skills section
+  useEffect(() => {
+    if (!canvasRef.current) return
+
+    const canvas = canvasRef.current
+    const ctx = canvas.getContext("2d")
+    if (!ctx) return
+
+    // Set canvas dimensions
+    const setCanvasDimensions = () => {
+      const dpr = window.devicePixelRatio || 1
+      canvas.width = window.innerWidth * dpr
+      canvas.height = window.innerHeight * dpr
+      canvas.style.width = `${window.innerWidth}px`
+      canvas.style.height = `${window.innerHeight}px`
+      ctx.scale(dpr, dpr)
+    }
+
+    setCanvasDimensions()
+    window.addEventListener("resize", setCanvasDimensions)
+
+    // Colors
+    const colors = [
+      { r: 185, g: 54, b: 238 }, // Purple (#b936ee)
+      { r: 11, g: 160, b: 228 }, // Blue (#0ba0e4)
+      { r: 255, g: 86, b: 246 }, // Pink (#ff56f6)
+      { r: 58, g: 71, b: 213 }, // Dark Blue (#3a47d5)
+    ]
+
+    // Create hexagon grid
+    class Hexagon {
+      x: number
+      y: number
+      size: number
+      color: { r: number; g: number; b: number }
+      opacity: number
+      pulseSpeed: number
+      pulsePhase: number
+      rotation: number
+      rotationSpeed: number
+
+      constructor(x: number, y: number) {
+        this.x = x
+        this.y = y
+        this.size = Math.random() * 20 + 30
+        this.color = colors[Math.floor(Math.random() * colors.length)]
+        this.opacity = Math.random() * 0.2 + 0.05
+        this.pulseSpeed = Math.random() * 0.02 + 0.01
+        this.pulsePhase = Math.random() * Math.PI * 2
+        this.rotation = Math.random() * Math.PI
+        this.rotationSpeed = (Math.random() - 0.5) * 0.005
+      }
+
+      update(time: number) {
+        // Pulse opacity
+        const opacityFactor = Math.sin(time * this.pulseSpeed + this.pulsePhase) * 0.5 + 0.5
+
+        // Rotate
+        this.rotation += this.rotationSpeed
+
+        return {
+          x: this.x,
+          y: this.y,
+          size: this.size,
+          color: this.color,
+          opacity: this.opacity * opacityFactor,
+          rotation: this.rotation,
+        }
+      }
+
+      draw(
+        ctx: CanvasRenderingContext2D,
+        x: number,
+        y: number,
+        size: number,
+        rotation: number,
+        color: { r: number; g: number; b: number },
+        opacity: number,
+      ) {
+        ctx.save()
+        ctx.translate(x, y)
+        ctx.rotate(rotation)
+
+        // Draw hexagon
+        ctx.beginPath()
+        for (let i = 0; i < 6; i++) {
+          const angle = (i * Math.PI) / 3
+          const px = Math.cos(angle) * size
+          const py = Math.sin(angle) * size
+          if (i === 0) {
+            ctx.moveTo(px, py)
+          } else {
+            ctx.lineTo(px, py)
+          }
+        }
+        ctx.closePath()
+
+        // Fill with gradient
+        const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, size)
+        gradient.addColorStop(0, `rgba(${color.r}, ${color.g}, ${color.b}, ${opacity * 1.5})`)
+        gradient.addColorStop(1, `rgba(${color.r}, ${color.g}, ${color.b}, 0)`)
+
+        ctx.fillStyle = gradient
+        ctx.fill()
+
+        ctx.restore()
+      }
+    }
+
+    // Create hexagon grid
+    const hexagons: Hexagon[] = []
+    const spacing = 100
+    const offsetX = spacing / 2
+    const offsetY = (spacing * Math.sqrt(3)) / 2
+
+    for (let row = -1; row < Math.ceil(window.innerHeight / offsetY) + 1; row++) {
+      for (let col = -1; col < Math.ceil(window.innerWidth / spacing) + 1; col++) {
+        const x = col * spacing + (row % 2) * offsetX
+        const y = row * offsetY
+        hexagons.push(new Hexagon(x, y))
+      }
+    }
+
+    // Animation variables
+    let time = 0
+    let animationFrameId: number
+
+    // Animation loop
+    const animate = () => {
+      // Clear canvas with a dark background
+      ctx.fillStyle = "rgba(0, 0, 0, 0.2)"
+      ctx.fillRect(0, 0, window.innerWidth, window.innerHeight)
+
+      // Draw hexagons
+      hexagons.forEach((hexagon) => {
+        const { x, y, size, color, opacity, rotation } = hexagon.update(time)
+        hexagon.draw(ctx, x, y, size, rotation, color, opacity)
+      })
+
+      // Increment time
+      time += 0.01
+
+      // Request next frame
+      animationFrameId = requestAnimationFrame(animate)
+    }
+
+    // Start animation
+    animate()
+
+    // Cleanup
+    return () => {
+      window.removeEventListener("resize", setCanvasDimensions)
+      cancelAnimationFrame(animationFrameId)
+    }
+  }, [])
 
   return (
     <div className="relative w-full min-h-screen">
-      <div className="absolute inset-0 -z-10">
-        {isBrowser && (
-          <Canvas>
-            <Background />
-          </Canvas>
-        )}
-      </div>
+      {/* Unique Background for Skills section */}
+      <canvas ref={canvasRef} className="absolute inset-0 -z-10" />
 
       <div className="container mx-auto px-4 py-16 relative z-10">
         <motion.div
